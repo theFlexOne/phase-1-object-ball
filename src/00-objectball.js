@@ -117,40 +117,37 @@ const gameObject = () => {
   }
 }
 
-const away = gameObject().away;
-const home = gameObject().home;
+// These lines of code made this assignment a LOT easier.
+const game = gameObject();
+const away = game.away;
+const home = game.home;
 const allPlayers = {...away.players, ...home.players};
+const teamNameObject = (() => {
+  const awayTeamName = away.teamName;
+  const homeTeamName = home.teamName;
+  return {[awayTeamName]: away, [homeTeamName]: home};
+})();
+
 
 const numPointsScored = player => allPlayers[player].points;
 
 const shoeSize = player => allPlayers[player].shoe;
 
 const teamColors = teamName => {
-  const colors = () => {
-    if (away.teamName === teamName) return away.colors;
-    else if (home.teamName === teamName) return home.colors;
-    else return `The ${teamName} didn't play in this game. The ${home.teamName} played against the ${away.teamName} in this game.`;
-  };
-  return colors();
-};
+  return (teamNameObject[teamName] === undefined) ?
+    `The ${teamName} didn't play in this game. The ${home.teamName} played against the ${away.teamName} in this game.` :
+    teamNameObject[teamName].colors;
+}
 
 const teamNames = () => [home.teamName, away.teamName];
 
 const playerNumbers = teamName => {
   const numbers = [];
-  const getNumbers = (() => {
-    if (away.teamName === teamName) {
-      for (const number in away.players) {
-        numbers.push(away.players[number].number)
-      }
+  if (teamNameObject[teamName] === undefined) return `The ${teamName} didn't play in this game. The ${home.teamName} played against the ${away.teamName} in this game.`;
+    for (const player in teamNameObject[teamName].players) {
+      numbers.push(teamNameObject[teamName].players[player].number)
     }
-    else if (home.teamName === teamName) {
-      for (const number in home.players) {
-        numbers.push(home.players[number].number)
-      }
-    }
-  })();
-  return numbers.length > 0 ? numbers : `The ${teamName} didn't play in this game. The ${home.teamName} played against the ${away.teamName} in this game.`;
+  return numbers;
 };
 
 const playerStats = playerName => allPlayers[playerName];
@@ -185,7 +182,6 @@ const winningTeam = () => {
     for (const player in away.players) points += away.players[player].points;
     return points;
   })();
-  
   const homePoints = (() => {
     let points = 0;
     for (const player in home.players) points += home.players[player].points;
@@ -207,7 +203,8 @@ const playerWithLongestName = () => {
 };
 
 const doesLongNameStealATon = () => {
+  const longestName = playerWithLongestName();
   let mostSteals = 0;
   for (const player in allPlayers) if (allPlayers[player].steals > mostSteals) mostSteals = allPlayers[player].steals;
-  return allPlayers[playerWithLongestName()].steals === mostSteals ? true : false;
+  return allPlayers[longestName].steals === mostSteals ? true : false;
 };
